@@ -1,8 +1,10 @@
 package com.andy;
 
+import com.andy.Endpoints.EchoEndpoint;
 import com.andy.Endpoints.EndpointResolver;
 import com.andy.Endpoints.RootEndpoint;
 import com.andy.RequestParser.Records.ParsedRequest;
+import com.andy.RequestParser.Records.ServerResponse;
 import com.andy.RequestParser.RequestParser;
 
 import java.io.*;
@@ -14,7 +16,7 @@ import static java.util.Map.entry;
 
 public class Server {
     public static void main(String[] args) {
-        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve));
+        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve), entry("/echo", EchoEndpoint::resolve));
 
         try (ServerSocket socket = new ServerSocket(8080))  {
             System.out.println("Server running");
@@ -22,10 +24,17 @@ public class Server {
                 try (Socket client = socket.accept(); InputStream in = client.getInputStream(); OutputStream out = client.getOutputStream()) {
                     BufferedInputStream buffer = new BufferedInputStream(in, 8192);
                     ParsedRequest parsedRequest = RequestParser.parse(buffer);
-                    EndpointResolver endpointResolver = endpointMapping.get(parsedRequest.requestLine().request_target());
+                    String request_target = parsedRequest.requestLine().request_target();
+                    int subPathIndex = request_target.indexOf("/", request_target.indexOf("/") + 1);
+                    String endpointPath = subPathIndex == -1 ? request_target : request_target.substring(0, subPathIndex);
+                    String subPath = subPathIndex == -1 ? null : request_target.substring(subPathIndex);
+
+                    EndpointResolver endpointResolver = endpointMapping.get(endpointPath);
+                    System.out.println(endpointPath);
+                    System.out.println(subPath);
                     if (endpointResolver != null){
-                        String response = endpointResolver.resolve(parsedRequest);
-                        out.write(String.format("HTTP/1.1 %s\r\n\r\n",response).getBytes());
+                        ServerResponse response = endpointResolver.resolve(parsedRequest);
+                        out.write(response.toBytes());
                     } else {
                         out.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
                     }

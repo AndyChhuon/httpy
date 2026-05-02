@@ -1,9 +1,8 @@
 package com.andy.Endpoints;
 
 import com.andy.RequestParser.Records.ParsedRequest;
-
-import java.util.Map;
+import com.andy.RequestParser.Records.ServerResponse;
 
 public interface EndpointResolver {
-    String resolve(ParsedRequest parsedRequest);
+    ServerResponse resolve(ParsedRequest parsedRequest);
 }
