@@ -17,13 +17,13 @@ public class RequestParser {
         while (!(headerLine = readLine(buffer)).isEmpty()){
             String[] parts = headerLine.split(": ");
             if (parts.length == 2){
-                headers.put(parts[0], parts[1]);
+                headers.put(parts[0].toLowerCase(), parts[1]);
             }
         }
 
         int contentLength;
         String body = "";
-        if ((contentLength = Integer.parseInt(headers.getOrDefault("Content-Length","0"))) > 0){
+        if ((contentLength = Integer.parseInt(headers.getOrDefault("content-length","0"))) > 0){
             body = new String(buffer.readNBytes(contentLength), StandardCharsets.UTF_8);
         }
 

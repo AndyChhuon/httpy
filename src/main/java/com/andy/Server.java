@@ -3,6 +3,7 @@ package com.andy;
 import com.andy.Endpoints.EchoEndpoint;
 import com.andy.Endpoints.EndpointResolver;
 import com.andy.Endpoints.RootEndpoint;
+import com.andy.Endpoints.UserAgentEndpoint;
 import com.andy.RequestParser.Records.ParsedRequest;
 import com.andy.RequestParser.Records.ServerResponse;
 import com.andy.RequestParser.RequestParser;
@@ -16,7 +17,7 @@ import static java.util.Map.entry;
 
 public class Server {
     public static void main(String[] args) {
-        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve), entry("/echo", EchoEndpoint::resolve));
+        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve), entry("/echo", EchoEndpoint::resolve), entry("/user-agent", UserAgentEndpoint::resolve));
 
         try (ServerSocket socket = new ServerSocket(8080))  {
             System.out.println("Server running");
@@ -27,11 +28,9 @@ public class Server {
                     String request_target = parsedRequest.requestLine().request_target();
                     int subPathIndex = request_target.indexOf("/", request_target.indexOf("/") + 1);
                     String endpointPath = subPathIndex == -1 ? request_target : request_target.substring(0, subPathIndex);
-                    String subPath = subPathIndex == -1 ? null : request_target.substring(subPathIndex);
 
                     EndpointResolver endpointResolver = endpointMapping.get(endpointPath);
-                    System.out.println(endpointPath);
-                    System.out.println(subPath);
+
                     if (endpointResolver != null){
                         ServerResponse response = endpointResolver.resolve(parsedRequest);
                         out.write(response.toBytes());
