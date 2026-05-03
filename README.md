@@ -24,3 +24,12 @@ In a separate terminal:
 ```bash
 curl -v http://localhost:8080
 ```
+
+### Load testing with JMeter
+
+Run the JMeter test and generate an HTML report:
+
+```bash
+jmeter -n -t loadtest.jmx -l results.jtl -e -o report/
+open report/index.html
+```

@@ -2,3 +2,6 @@
 /target
 .DS_Store
 **/.DS_Store
+jmeter.log
+/report
+results.jtl
