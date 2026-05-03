@@ -1,9 +1,6 @@
 package com.andy;
 
-import com.andy.Endpoints.EchoEndpoint;
-import com.andy.Endpoints.EndpointResolver;
-import com.andy.Endpoints.RootEndpoint;
-import com.andy.Endpoints.UserAgentEndpoint;
+import com.andy.Endpoints.*;
 import com.andy.RequestParser.Records.ParsedRequest;
 import com.andy.RequestParser.Records.ServerResponse;
 import com.andy.RequestParser.RequestParser;
@@ -23,14 +20,19 @@ import static java.util.Map.entry;
 
 public class Server {
     public static void main(String[] args) {
-        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve), entry("/echo", EchoEndpoint::resolve), entry("/user-agent", UserAgentEndpoint::resolve));
+        final Map<String, EndpointResolver> endpointMapping = Map.ofEntries(entry("/", RootEndpoint::resolve), entry("/echo", EchoEndpoint::resolve), entry("/user-agent", UserAgentEndpoint::resolve), entry("/files", FilesEndpoint::resolve));
         LongAdder count = new LongAdder();
         LongAdder totalNanos = new LongAdder();
         AtomicLong maxNanos = new AtomicLong();
 
-        try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); ServerSocket socket = new ServerSocket(8080, 1024))  {
-            System.out.println("Server running");
+        for (int i = 0; i < args.length -1; i++){
+            if ("--directory".equals(args[i])){
+                FilesEndpoint.path = args[i+1];
+                System.out.println(args[i+1]);
+            }
+        }
 
+        try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); ServerSocket socket = new ServerSocket(8080, 1024))  {
             scheduler.scheduleAtFixedRate(() -> {
                 long n = count.sumThenReset();
                 long total = totalNanos.sumThenReset();
